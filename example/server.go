@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/appleboy/gin-jwt"
 	"github.com/gin-gonic/gin"
+	jwt "github.com/zanmato/gin-jwt"
 )
 
 func helloHandler(c *gin.Context) {
@@ -33,12 +33,16 @@ func main() {
 		Key:        []byte("secret key"),
 		Timeout:    time.Hour,
 		MaxRefresh: time.Hour,
-		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
-			if (userId == "admin" && password == "admin") || (userId == "test" && password == "test") {
-				return userId, true
+		Authenticator: func(userId string, password string, c *gin.Context) (map[string]interface{}, bool) {
+			if userId == "admin" && password == "admin" {
+				return map[string]interface{}{"id": userId, "role": "administrator"}, true
 			}
 
-			return userId, false
+			if userId == "test" && password == "test" {
+				return map[string]interface{}{"id": userId, "role": "tester"}, true
+			}
+
+			return nil, false
 		},
 		Authorizator: func(userId string, c *gin.Context) bool {
 			if userId == "admin" {
